@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -30,16 +31,18 @@ public class Main {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS hdfs_apps_monitoring(c_path TEXT, size BIGINT, c_timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT current_timestamp)");
 			FileSystem fs = FileSystem.get(conf);
-			Path currentPath = new Path("/");
 			// report current directory size (focusing on the one using the 80%)
-			long l = fs.getContentSummary(currentPath).getSpaceConsumed();
-			System.out.println("INSERT INTO hdfs_apps_monitoring VALUES('" + currentPath.toString() + "', " + l + ")");
-			statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + currentPath.toString() + "', " + l + ")");
 			FileStatus[] fsStatus = fs.listStatus(new Path("/"));
-			for(int i = 0; i < fsStatus.length; i++){
+			ArrayList<Path> arrayListPath = new ArrayList<>();
+			for (int i = 0; i < fsStatus.length; i++) {
+				arrayListPath.add(fsStatus[i].getPath());
 				statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + fsStatus[i].getPath().toString() + "', " + fs.getContentSummary(fsStatus[i].getPath()).getSpaceConsumed() + ")");
 			}
+			for (Path currentPath : arrayListPath) {
+				statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + currentPath.toString() + "', " + fs.getContentSummary(currentPath).getSpaceConsumed() + ")");
+			}
 			
+			// looking for small file
 			
 			// looking for file in .staging folder older than one week
 			
