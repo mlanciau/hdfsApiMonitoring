@@ -39,7 +39,10 @@ public class Main {
 				statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + fsStatus[i].getPath().toString() + "', " + fs.getContentSummary(fsStatus[i].getPath()).getSpaceConsumed() + ")");
 			}
 			for (Path currentPath : arrayListPath) {
-				statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + currentPath.toString() + "', " + fs.getContentSummary(currentPath).getSpaceConsumed() + ")");
+				fsStatus = fs.listStatus(currentPath);
+				for (int i = 0; i < fsStatus.length; i++) {
+					statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + fsStatus[i].getPath().toString() + "', " + fs.getContentSummary(fsStatus[i].getPath()).getSpaceConsumed() + ")");
+				}
 			}
 			
 			// looking for small file
