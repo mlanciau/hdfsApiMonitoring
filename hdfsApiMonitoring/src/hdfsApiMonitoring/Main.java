@@ -38,11 +38,19 @@ public class Main {
 				arrayListPath.add(fsStatus[i].getPath());
 				statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + fsStatus[i].getPath().toString() + "', " + fs.getContentSummary(fsStatus[i].getPath()).getSpaceConsumed() + ")");
 			}
+			
 			ArrayList<Path> arrayListSubPath = new ArrayList<>();
 			for (Path currentPath : arrayListPath) {
 				fsStatus = fs.listStatus(currentPath);
 				for (int i = 0; i < fsStatus.length; i++) {
 					arrayListSubPath.add(fsStatus[i].getPath());
+					statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + fsStatus[i].getPath().toString() + "', " + fs.getContentSummary(fsStatus[i].getPath()).getSpaceConsumed() + ")");
+				}
+			}
+			
+			for (Path currentPath : arrayListSubPath) {
+				fsStatus = fs.listStatus(currentPath);
+				for (int i = 0; i < fsStatus.length; i++) {
 					statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + fsStatus[i].getPath().toString() + "', " + fs.getContentSummary(fsStatus[i].getPath()).getSpaceConsumed() + ")");
 				}
 			}
