@@ -29,7 +29,7 @@ public class Main {
 			Class.forName("org.postgresql.Driver");
 			Connection connection = DriverManager.getConnection("jdbc:postgresql://" + postgres_host + ":5432/test", postgres_user, postgres_password);
 			Statement statement = connection.createStatement();
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS hdfs_apps_monitoring(c_path TEXT, size BIGINT, c_timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT current_timestamp)");
+			statement.executeUpdate("CREATE TABLE IF NOT EXISTS hdfs_apps_monitoring(c_path TEXT, size BIGINT, c_session SERIAL, c_timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT current_timestamp)");
 			FileSystem fs = FileSystem.get(conf);
 			// report current directory size (focusing on the one using the 80%)
 			FileStatus[] fsStatus = fs.listStatus(new Path("/"));
