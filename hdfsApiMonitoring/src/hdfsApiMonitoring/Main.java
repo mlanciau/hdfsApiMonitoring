@@ -28,11 +28,22 @@ public class Main {
 			Class.forName("org.postgresql.Driver");
 			Connection connection = DriverManager.getConnection("jdbc:postgresql://" + postgres_host + ":5432/test", postgres_user, postgres_password);
 			Statement statement = connection.createStatement();
+			statement.executeUpdate("CREATE TABLE IF NOT EXIST hdfs_apps_monitoring(c_path TEXT, size BIGINT, c_timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT current_timestamp)");
 			FileSystem fs = FileSystem.get(conf);
+			Path currentPath = new Path("/");
+			// report current directory size (focusing on the one using the 80%)
+			long l = fs.getContentSummary(currentPath).getSpaceConsumed();
+			System.out.println("INSERT INTO hdfs_apps_monitoring VALUES('" + currentPath.toString() + "', " + l + ")");
+			statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + currentPath.toString() + "', " + l + ")");
 			FileStatus[] fsStatus = fs.listStatus(new Path("/"));
 			for(int i = 0; i < fsStatus.length; i++){
-				System.out.println(fsStatus[i].getPath().toString());
+				statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + fsStatus[i].getPath().toString() + "', " + fs.getContentSummary(fsStatus[i].getPath()).getSpaceConsumed() + ")");
 			}
+			
+			
+			// looking for file in .staging folder older than one week
+			
+			// closing
 			fs.close();
 			statement.close();
 			connection.close();
