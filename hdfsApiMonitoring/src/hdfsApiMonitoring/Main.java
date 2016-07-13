@@ -55,10 +55,13 @@ public class Main {
 			statement.close();
 			connection.close();
 		} catch (IllegalArgumentException | IOException e) {
+			System.exit(1);
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
+			System.exit(2);
 			e.printStackTrace();
 		} catch (SQLException e) {
+			System.exit(3);
 			e.printStackTrace();
 		}
 	}
