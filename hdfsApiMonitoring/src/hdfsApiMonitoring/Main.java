@@ -28,8 +28,9 @@ public class Main {
 			Class.forName("org.postgresql.Driver");
 			String encoding = Base64.encodeBase64String("mlanciau:mlanciau-password".getBytes());
 			HttpClient httpClient = HttpClientBuilder.create().build();
-			System.out.println("https://" + KNOX_URL + "/webhdfs/v1/tmp?op=LISTSTATUS");
-			HttpGet httpGet = new HttpGet("https://" + KNOX_URL + "/webhdfs/v1/tmp?op=LISTSTATUS");
+			String URL = "https://" + KNOX_URL + "/webhdfs/v1/tmp?op=GETCONTENTSUMMARY";
+			System.out.println(URL);
+			HttpGet httpGet = new HttpGet(URL);
 			httpGet.addHeader("Accept", "application/json");
 			httpGet.setHeader("Authorization", "Basic " + encoding);
 			HttpResponse httpResponse = httpClient.execute(httpGet);
@@ -40,7 +41,6 @@ public class Main {
 			Connection connection = DriverManager.getConnection("jdbc:postgresql://" + postgres_host + ":5432/test", postgres_user, postgres_password);
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS hdfs_apps_monitoring(c_path TEXT, size BIGINT, c_session SERIAL, c_timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT current_timestamp)");
-			
 			
 			// tmp directory
 			
