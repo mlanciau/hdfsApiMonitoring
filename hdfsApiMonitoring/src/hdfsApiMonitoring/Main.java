@@ -56,24 +56,21 @@ public class Main {
 			resultSet.close();
 			for (c_level = 0; c_level < 5; c_level++) {
 				System.out.println("level : " + c_level);
-				arrayListSubPath.clear();
+				arrayListSubPath = new ArrayList<>();
 				for (String path : arrayListPath) {
 					getSpaceConsumed(path, KNOX_URL, encoding, statement, c_session, c_level);
 					arrayListSubPath.addAll(getSubPath(path, KNOX_URL, encoding, with_deletion));
 				}
-				arrayListPath = (ArrayList<String>) arrayListSubPath.clone();
+				arrayListPath = arrayListSubPath;
 			}
 			
-			// tmp directory
+			// /tmp/hive directory
 			
 			// .staging directory
 			
 			// looking for small file
 			
-			// looking for file in .staging folder older than one week
-			
 			// closing
-			
 			statement.close();
 			connection.close();
 		} catch (IllegalArgumentException e) {
@@ -98,6 +95,9 @@ public class Main {
 			HttpResponse httpResponse = httpClient.execute(httpGet);
 			HttpEntity responseEntity = httpResponse.getEntity();
 			String responseString = EntityUtils.toString(responseEntity, "UTF-8");
+			if (responseString.contains("FileNotFoundException")) {
+				return;
+			}
 			JsonNode jsonNode = mapper.readTree(responseString);
 			JsonNode jsonNodeCurrent = jsonNode.at("/ContentSummary");
 			if (jsonNodeCurrent != null && jsonNodeCurrent.get("spaceConsumed") != null) {
@@ -128,7 +128,7 @@ public class Main {
 			System.out.println(responseString);
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.exit(5);
+			System.exit(6);
 		}
 	}
 	
@@ -154,7 +154,8 @@ public class Main {
 				jsonNodeCurrent = appsIterator.next();
 				//System.out.println(jsonNodeCurrent.get("pathSuffix").asText());
 				//System.out.println(jsonNodeCurrent.get("modificationTime").asLong() + " " + Calendar.getInstance().getTimeInMillis());
-				if ((dir.endsWith(".staging") || ((dir.startsWith("/tmp/hive")) && !dir.endsWith("/tmp/hive") && !jsonNodeCurrent.get("pathSuffix").asText().equals("_tez_session_dir")))) {
+				if ((jsonNodeCurrent.get("pathSuffix").asText().equals("teragen") || jsonNodeCurrent.get("pathSuffix").asText().equals("terasort") || jsonNodeCurrent.get("pathSuffix").asText().equals("teravalidate") || jsonNodeCurrent.get("pathSuffix").asText().equals("TestDFSIO")
+						|| dir.endsWith(".staging") || ((dir.startsWith("/tmp/hive")) && !dir.endsWith("/tmp/hive") && !jsonNodeCurrent.get("pathSuffix").asText().equals("_tez_session_dir")))) {
 					if (jsonNodeCurrent.get("modificationTime").asLong() < Calendar.getInstance().getTimeInMillis() - 604800000) {
 						if (with_deletion.equals("y") || with_deletion.equals("yes")) {
 							System.out.println("Asking for deletion : " + dir + "/" + jsonNodeCurrent.get("pathSuffix").asText() + "   " + simpleDateFormat.format(new Date(jsonNodeCurrent.get("modificationTime").asLong())) + "   and   " + simpleDateFormat.format(new Date((Calendar.getInstance().getTimeInMillis() - 604800000))));
