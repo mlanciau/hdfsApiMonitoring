@@ -27,14 +27,16 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 public class Main {
 
 	public static void main(String[] args) {
-		String postgres_host = args[0];
-		String postgres_user = args[1];
-		String postgres_password = args[2];
-		String KNOX_URL = args[3];
-		String cluster_name = args[4];
-		String knox_user = args[5];
-		String knox_password = args[6];
-		String with_deletion = args[7];
+		int i = 0;
+		String writeFile = args[i++];
+		String postgres_host = args[i++];
+		String postgres_user = args[i++];
+		String postgres_password = args[i++];
+		String KNOX_URL = args[i++];
+		String cluster_name = args[i++];
+		String knox_user = args[i++];
+		String knox_password = args[i++];
+		String with_deletion = args[i++];
 		try {
 			Class.forName("org.postgresql.Driver");
 			String encoding = Base64.encodeBase64String((knox_user + ":" + knox_password).getBytes());
@@ -58,7 +60,7 @@ public class Main {
 				System.out.println("level : " + c_level);
 				arrayListSubPath = new ArrayList<>();
 				for (String path : arrayListPath) {
-					getSpaceConsumed(path, KNOX_URL, encoding, statement, c_session, c_level);
+					getSpaceConsumed(path, KNOX_URL, encoding, statement, c_session, c_level, writeFile);
 					arrayListSubPath.addAll(getSubPath(path, KNOX_URL, encoding, with_deletion));
 				}
 				arrayListPath = arrayListSubPath;
@@ -85,7 +87,7 @@ public class Main {
 		}
 	}
 	
-	private static void getSpaceConsumed(String dir, String KNOX_URL, String encoding, Statement statement, long c_session, int c_level) {
+	private static void getSpaceConsumed(String dir, String KNOX_URL, String encoding, Statement statement, long c_session, int c_level, String writeFile) {
 		try {
 			String URL = "https://" + KNOX_URL + "/webhdfs/v1" + dir + "?op=GETCONTENTSUMMARY";
 			HttpClient httpClient = HttpClientBuilder.create().build();
@@ -98,16 +100,20 @@ public class Main {
 			if (responseString.contains("FileNotFoundException")) {
 				return;
 			}
-			JsonNode jsonNode = mapper.readTree(responseString);
-			JsonNode jsonNodeCurrent = jsonNode.at("/ContentSummary");
-			if (jsonNodeCurrent != null && jsonNodeCurrent.get("spaceConsumed") != null) {
-				statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + dir + 
-						"', " + jsonNodeCurrent.get("spaceConsumed").asLong()  + ", " + jsonNodeCurrent.get("length").asLong() + ", " +
-						jsonNodeCurrent.get("directoryCount").asInt() + ", " + jsonNodeCurrent.get("fileCount").asInt() + ", " +
-						jsonNodeCurrent.get("quota").asInt() + ", " + jsonNodeCurrent.get("spaceQuota").asInt() + ", " + c_session + ", " + c_level + 
-						")");
+			if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
+				
 			} else {
-				System.out.println(responseString);
+				JsonNode jsonNode = mapper.readTree(responseString);
+				JsonNode jsonNodeCurrent = jsonNode.at("/ContentSummary");
+				if (jsonNodeCurrent != null && jsonNodeCurrent.get("spaceConsumed") != null) {
+					statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + dir + 
+							"', " + jsonNodeCurrent.get("spaceConsumed").asLong()  + ", " + jsonNodeCurrent.get("length").asLong() + ", " +
+							jsonNodeCurrent.get("directoryCount").asInt() + ", " + jsonNodeCurrent.get("fileCount").asInt() + ", " +
+							jsonNodeCurrent.get("quota").asInt() + ", " + jsonNodeCurrent.get("spaceQuota").asInt() + ", " + c_session + ", " + c_level + 
+							")");
+				} else {
+					System.out.println(responseString);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
