@@ -109,8 +109,8 @@ public class Main {
 				if (jsonNodeCurrent != null && jsonNodeCurrent.get("spaceConsumed") != null) {
 					statement.executeUpdate("INSERT INTO hdfs_apps_monitoring VALUES('" + dir + 
 							"', " + jsonNodeCurrent.get("spaceConsumed").asLong()  + ", " + jsonNodeCurrent.get("length").asLong() + ", " +
-							jsonNodeCurrent.get("directoryCount").asInt() + ", " + jsonNodeCurrent.get("fileCount").asInt() + ", " +
-							jsonNodeCurrent.get("quota").asInt() + ", " + jsonNodeCurrent.get("spaceQuota").asInt() + ", " + c_session + ", " + c_level + 
+							jsonNodeCurrent.get("directoryCount").asLong() + ", " + jsonNodeCurrent.get("fileCount").asLong() + ", " +
+							jsonNodeCurrent.get("quota").asLong() + ", " + jsonNodeCurrent.get("spaceQuota").asLong() + ", " + c_session + ", " + c_level + 
 							")");
 				} else {
 					System.out.println(responseString);
