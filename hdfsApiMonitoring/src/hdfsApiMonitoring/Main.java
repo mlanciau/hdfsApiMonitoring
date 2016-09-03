@@ -37,6 +37,7 @@ public class Main {
 		String knox_user = args[i++];
 		String knox_password = args[i++];
 		String with_deletion = args[i++];
+		String c_level_max = args[i++];
 		try {
 			Class.forName("org.postgresql.Driver");
 			String encoding = Base64.encodeBase64String((knox_user + ":" + knox_password).getBytes());
@@ -56,7 +57,7 @@ public class Main {
 				c_session = resultSet.getLong("c_max_session");
 			}
 			resultSet.close();
-			for (c_level = 0; c_level < 5; c_level++) {
+			for (c_level = 0; c_level < Integer.valueOf(c_level_max); c_level++) {
 				System.out.println("level : " + c_level);
 				arrayListSubPath = new ArrayList<>();
 				for (String path : arrayListPath) {
@@ -161,7 +162,7 @@ public class Main {
 				//System.out.println(jsonNodeCurrent.get("pathSuffix").asText());
 				//System.out.println(jsonNodeCurrent.get("modificationTime").asLong() + " " + Calendar.getInstance().getTimeInMillis());
 				if ((jsonNodeCurrent.get("pathSuffix").asText().equals("teragen") || jsonNodeCurrent.get("pathSuffix").asText().equals("terasort") || jsonNodeCurrent.get("pathSuffix").asText().equals("teravalidate") || jsonNodeCurrent.get("pathSuffix").asText().equals("TestDFSIO")
-						|| dir.endsWith(".staging") || ((dir.startsWith("/tmp/hive")) && !dir.endsWith("/tmp/hive") && !jsonNodeCurrent.get("pathSuffix").asText().equals("_tez_session_dir")))) {
+						|| dir.endsWith(".staging") || (dir.startsWith("/tmp") && !dir.endsWith("/tmp/") && !jsonNodeCurrent.get("pathSuffix").asText().equals("hive")) || ((dir.startsWith("/tmp/hive")) && !dir.endsWith("/tmp/hive") && !jsonNodeCurrent.get("pathSuffix").asText().equals("_tez_session_dir")))) {
 					if (jsonNodeCurrent.get("modificationTime").asLong() < Calendar.getInstance().getTimeInMillis() - 604800000) {
 						if (with_deletion.equals("y") || with_deletion.equals("yes")) {
 							System.out.println("Asking for deletion : " + dir + "/" + jsonNodeCurrent.get("pathSuffix").asText() + "   " + simpleDateFormat.format(new Date(jsonNodeCurrent.get("modificationTime").asLong())) + "   and   " + simpleDateFormat.format(new Date((Calendar.getInstance().getTimeInMillis() - 604800000))));
