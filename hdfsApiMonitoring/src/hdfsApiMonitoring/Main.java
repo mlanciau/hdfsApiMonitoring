@@ -32,6 +32,7 @@ public class Main {
 		String postgres_host = args[i++];
 		String postgres_user = args[i++];
 		String postgres_password = args[i++];
+		String postgres_port = args[i++];
 		String postgres_database = args[i++];
 		String KNOX_URL = args[i++];
 		String cluster_name = args[i++];
@@ -42,7 +43,7 @@ public class Main {
 		try {
 			Class.forName("org.postgresql.Driver");
 			String encoding = Base64.encodeBase64String((knox_user + ":" + knox_password).getBytes());
-			Connection connection = DriverManager.getConnection("jdbc:postgresql://" + postgres_host + ":5432/" + postgres_database, postgres_user, postgres_password);
+			Connection connection = DriverManager.getConnection("jdbc:postgresql://" + postgres_host + ":" + postgres_port + "/" + postgres_database, postgres_user, postgres_password);
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS hdfs_apps_monitoring(c_path TEXT, "
 					+ "c_spaceconsumed BIGINT, c_length BIGINT, c_directorycount INT, "
